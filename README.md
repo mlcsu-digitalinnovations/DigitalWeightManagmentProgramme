@@ -14,3 +14,7 @@ Provide a concise, standards-based reference that helps system suppliers, commis
 
 ## Available Documents
 [Provider Referral MDS Receive API Specification](https://github.com/mlcsu-digitalinnovations/DigitalWeightManagmentProgramme/blob/main/provider_referral_mds.md)
+
+[Provider API Specification Documentation](https://mlcsu-digitalinnovations.github.io/DigitalWeightManagmentProgramme/)
+
+[Provider API Authentication Details](https://github.com/mlcsu-digitalinnovations/DigitalWeightManagmentProgramme/blob/main/api-authentication.md)
