@@ -65,7 +65,7 @@ Before attempting to access the API, confirm that you have received these values
 | Client application ID | Application/client ID assigned to your customer client application. |
 | Token endpoint | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`. |
 | Provider API Application ID URI | Resource identifier for the Digital Weight Management Programme Provider API. |
-| Scope | `api://<provider-api-application-id-uri>/.default`. |
+| Scope | `<provider-api-application-id-uri>/.default`. |
 | Provider API base URL | Base URL for the Provider API App Service. |
 
 ## Customer certificate requirements
@@ -89,7 +89,7 @@ The customer application needs these values:
 | `CertificatePrivateKey` | Customer-held private key or certificate reference. |
 | `CertificateThumbprint` | Thumbprint for the public certificate uploaded to the app registration. |
 | `TokenEndpoint` | `https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token`. |
-| `Scope` | `api://<provider-api-application-id-uri>/.default`. |
+| `Scope` | `<provider-api-application-id-uri>/.default`. |
 | `ProviderApiBaseUrl` | Base URL for the Digital Weight Management Programme Provider API App Service. |
 | `ApiVersionHeader` | `X-Api-Version: 3`. |
 
@@ -107,7 +107,7 @@ using System.Security.Cryptography.X509Certificates;
 
 var tenantId = "<tenant-id>";
 var clientId = "<customer-client-application-id>";
-var scope = "api://<provider-api-application-id-uri>/.default";
+var scope = "<provider-api-application-id-uri>/.default";
 var certificate = new X509Certificate2("<path-to-certificate-with-private-key>", "<certificate-password>");
 
 var app = ConfidentialClientApplicationBuilder
@@ -130,7 +130,7 @@ POST https://login.microsoftonline.com/<tenant-id>/oauth2/v2.0/token
 Content-Type: application/x-www-form-urlencoded
 
 client_id=<customer-client-application-id>
-&scope=api://<provider-api-application-id-uri>/.default
+&scope=<provider-api-application-id-uri>/.default
 &client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
 &client_assertion=<signed-client-assertion-jwt>
 &grant_type=client_credentials
@@ -170,7 +170,7 @@ To avoid outages:
 | Symptom | Checks |
 | --- | --- |
 | Token request fails | Confirm tenant ID, client ID, certificate thumbprint, assertion audience, assertion expiry, and that the public certificate is uploaded to the app registration. |
-| Invalid scope | Confirm the scope is exactly `api://<provider-api-application-id-uri>/.default` and refers to the Provider API resource. |
+| Invalid scope | Confirm the scope is exactly `<provider-api-application-id-uri>/.default` and refers to the Provider API resource. |
 | Provider API returns 401 | Confirm the bearer token is present in `Authorization`, the token is not expired, the token was issued by the expected tenant, and App Service or API middleware trusts the issuer and audience. |
 | Provider API returns 403 | Confirm with the API team that the customer client application has the required Provider API app role/application permission and that admin consent or app role assignment is complete. |
 | Provider API returns 404 | Confirm `providerUbrn` is 12 characters, the referral exists, and any `{date}` path value uses `yyyy-MM-dd`. |
