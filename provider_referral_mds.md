@@ -1,4 +1,11 @@
-# Provider Referral MDS Receive API Specification v1.0
+# Provider Referral MDS Receive API Specification v1.1
+
+| Version | Description |
+| --- | --- |
+| 1.1 | Payload field `providerUbrn` format updated to 12 alpha numeric characters not digits. |
+|     | Payload field `idempotencyKey` moved to request header. |
+|     | Location header removed from Example Provider Conflict Error response. |
+| 1.0 | Initial Release |
 
 This document describes the minimum data set (MDS) that Digital Weight Management Programme (DWMP) will send to provider
 systems when a service user referral is submitted to a provider.
@@ -41,14 +48,20 @@ The provider's API should respond in a timely manner as the DWMP request will ti
 ### Rate Limits
 In normal operation requests to the provider's API will be made in real time as soon as the service user confirms their provider selection. In downtime recovery situations where a backlog of referrals has built up and communication has been restored, they will be sent sequentially one after the other until the backlog is cleared. They will be sent as quickly as processable by the provider's API, so rate limits should be set accordingly.
 
+## Headers
+All fields will always be sent in the header.
+
+| Field | Data Type | Max Length | Format / Allowed Values | Description |
+| --- | --- | --- | --- | --- |
+| `IdempotencyKey` | `string` | 36 | `GUID` | Identifies a unique request, consistent between retries. |
+
 ## Payload Fields
 
 All fields will always be sent in the request.
 
 | Field | Data Type | Max Length | Format / Allowed Values | Description |
 | --- | --- | --- | --- | --- |
-| `idempotencyKey` | `string` | 36 | `GUID` | Identifies a unique request, consistent between retries. |
-| `providerUbrn` | `string` | 12 | `^\d{12}$` | Unique booking reference number. This is the referral's unique key and is used for all submissions from DWMP to the provider. |
+| `providerUbrn` | `string` | 12 | `^[A-Z0-9]{12}$` | Unique booking reference number. This is the referral's unique key and is used for all submissions from DWMP to the provider. |
 | `dateOfReferral` | `string` | 10 | `yyyy-MM-dd` | The date the referral was received by DWMP. |
 | `providerSelectedDate` | `string` | 10 | `yyyy-MM-dd` | The date when the service user selected the provider. |
 | `referralSource` | `string` | 50 | `GP`, `NHSStaff`, `Pharmacy`, `MSK`, `ElectiveCare` | The source pathway of the referral. |
@@ -101,10 +114,15 @@ All fields will always be sent in the request.
 
 This is an example request body that DWMP may send to a provider API.
 
+### Header
+| Key | Value |
+| --- | --- |
+| `IdempotencyKey` | 41b93a15-4e47-4513-99bf-d3a332548dd1 |
+
+### Payload
 ```json
 {
-  "idempotencyKey": "41b93a15-4e47-4513-99bf-d3a332548dd1",
-  "providerUbrn": "123456789012",
+  "providerUbrn": "GP1234567890",
   "dateOfReferral": "2026-05-27",
   "providerSelectedDate": "2026-05-27",
   "referralSource": "GP",
@@ -147,7 +165,7 @@ The following fields in the provider success response will be processed.
 
 | Field | Data Type | Required | Max Length | Format / Allowed Values | Description |
 | --- | --- | --- | --- | --- | --- |
-| `providerUbrn` | `string` | Yes | 12 | `^\d{12}$` | Unique booking reference number. |
+| `providerUbrn` | `string` | Yes | 12 | `^[A-Z0-9]{12}$` | Unique booking reference number. |
 | `receivedAtUtc` | `string` | Yes | 20 | `yyyy-MM-ddTHH:mm:ssZ` | The UTC date and time the referral was received by the provider API. |
 | `providerReferralId` | `string` | No | 200 |  | Optional field for the provider to supply their referral identity to aid correlation. |
 
@@ -158,13 +176,13 @@ This is an example success response body that the provider API should return to 
 
 ```http
 HTTP/1.1 201 Created
-Location: /api/referral/123456789012
+Location: /api/referral/GP1234567890
 Content-Type: application/json
 ```
 
 ```json
 {
-  "providerUbrn": "123456789012",
+  "providerUbrn": "GP1234567890",
   "providerReferralId": "PR-000123",
   "receivedAtUtc": "2026-05-27T09:36:42Z"
 }
@@ -200,7 +218,7 @@ Content-Type: application/problem+json
   "status": 400,
   "errors": {
     "providerUbrn": [
-      "Value must match ^\\d{12}$."
+      "Value must match ^[A-Z0-9]{12}$."
     ],
     "mobile": [
       "Either mobile or telephone must be supplied."
@@ -224,7 +242,7 @@ Content-Type: application/problem+json
 | `title` | `string` | No | 500 | | Problem title. |
 | `status` | `integer` | No |  | 409 | 409 Conflict status code. |
 | `error` | `string` | Yes | 500  |  | Description of why the 409 occurred. |
-| `providerUbrn` | `string` | Yes | 12 | `^\d{12}$` | Unique booking reference number. |
+| `providerUbrn` | `string` | Yes | 12 | `^[A-Z0-9]{12}$` | Unique booking reference number. |
 | `receivedAtUtc` | `string` | Yes | 20 | `yyyy-MM-ddTHH:mm:ssZ` | The UTC date and time the referral was received by the provider API. |
 | `providerReferralId` | `string` | No | 200 |  | Optional field for the provider to supply their referral identity to aid correlation. |
 
@@ -232,7 +250,6 @@ Content-Type: application/problem+json
 
 ```http
 HTTP/1.1 409 Conflict
-Location: /api/referral/123456789012
 Content-Type: application/problem+json
 ```
 
@@ -242,7 +259,7 @@ Content-Type: application/problem+json
   "title": "Conflict.",
   "status": 409,
   "error": "Referral already exists.",
-  "providerUbrn": "123456789012",
+  "providerUbrn": "GP1234567890",
   "providerReferralId": "PR-000123",
   "receivedAtUtc": "2026-05-27T09:36:42Z"  
 }
